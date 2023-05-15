@@ -1,20 +1,27 @@
 // import styles from './index.module.css'
 import { Button, Upload, Table, Divider } from 'antd'
 import type { UploadChangeParam } from 'antd/lib/upload'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAtom } from 'jotai'
+import { fieldsAtom } from '@/store/graph'
 
 export default function DataManage() {
   const [list, setList] = useState([])
+  const [fields, setFields] = useAtom(fieldsAtom)
 
-  const columns = list[0]
-    ? Object.keys(list[0]).map((key) => {
-        return {
-          key,
-          dataIndex: key,
-          title: key,
-        }
-      })
-    : []
+  useEffect(() => {
+    const columns = list[0]
+      ? Object.keys(list[0]).map((key) => {
+          return {
+            key,
+            name: key,
+            type: 'dimension',
+          }
+        })
+      : []
+    setFields(columns)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list])
 
   const handleChange = (param: UploadChangeParam) => {
     const { file } = param
@@ -49,7 +56,13 @@ export default function DataManage() {
         pagination={{
           pageSize: 10,
         }}
-        columns={columns}
+        columns={fields.map((field) => {
+          return {
+            title: field.name,
+            dataIndex: field.key,
+            key: field.key,
+          }
+        })}
       />
     </main>
   )
